@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+	<!-- Whatever testdata needed go here -->
+	<DUMMYSC.DUMMY_TABLE  
+	 	ID="1"
+	 	VALUE="TheValue"
+	/>	
+</dataset>

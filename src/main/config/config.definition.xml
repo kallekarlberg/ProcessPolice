@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+	<header>
+		<!-- Meta data about the resulting combined configuration -->
+	</header>
+	<override>
+		<!-- Configuration declarations with override semantics -->
+		<properties fileName="application.properties" />
+		<properties fileName="log4j.properties" delimiterParsingDisabled="true"/>
+	</override>
+	<additional>
+		<!-- Configuration declarations that form a union configuration -->
+	</additional>
+</configuration>

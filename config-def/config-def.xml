@@ -1,0 +1,16 @@
+<ConfigDef xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <PropOwner name="ApplicationInstance" description="Appid container">
+		<Prop name="app.id" required="false" secret="true" description="Application id. This value is unique for each deployed application instance." />
+	</PropOwner>
+	<PropOwner name="Log4j" description="Log4j property owner">
+		<Prop name="log4j.appender.A1" required="true" secret="false" description="Which appender to use (e.g. console, syslog)" defaultValue="org.apache.log4j.net.SyslogAppenderEx"/>
+		<Prop name="log4j.appender.A1.layout" required="true" secret="false" description="Which pattern layout to use" defaultValue="org.apache.log4j.PatternLayout"/>
+		<Prop name="log4j.appender.A1.layout.ConversionPattern" required="true" secret="false" description="What pattern to use for log header."/>
+		<Prop name="log4j.rootLogger" required="true" secret="false" description="What logger level to use as default" defaultValue="INFO,A1"/>
+	</PropOwner>
+	<Application typepId="FIXME" name="YOUR APP NAME" description="Some fancy description">
+			<Prop name="your.app.prop" required="true" secret="false" description="Some fancy description"/>
+      <OwnerRef ref="Log4j"/>
+      <OwnerRef ref="ApplicationInstance"/>
+	</Application>
+</ConfigDef>

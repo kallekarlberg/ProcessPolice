@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<session-factory>
+		<!-- Connection -->
+		<property name="hibernate.connection.driver_class">com.ibm.db2.jcc.DB2Driver</property>
+		<property name="hibernate.dialect">org.hibernate.dialect.DB2Dialect</property>
+
+		<!-- Debug -->
+		<property name="hibernate.show_sql">false</property>
+		<property name="hibernate.format_sql">false</property>
+
+		<!-- Hibernate session and create scheme dialect -->
+		<property name="hibernate.current_session_context_class">thread</property>
+		<property name="hibernate.bytecode.use_reflection_optimizer">false</property>
+
+		<!-- Connection Pool -->
+		<property name="hibernate.c3p0.acquire_increment">3</property>
+		<!-- Idle connection test period (seconds) -->
+		<property name="hibernate.c3p0.idle_test_period">180</property>
+		<property name="hibernate.c3p0.max_statements">0</property>
+		<property name="hibernate.c3p0.max_size">4</property>
+		<property name="hibernate.c3p0.min_size">1</property>
+		<!-- Max idle time (seconds) -->
+		<property name="hibernate.c3p0.timeout">100</property>
+		
+	</session-factory>
+</hibernate-configuration>

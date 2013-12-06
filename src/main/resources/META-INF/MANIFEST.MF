@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Last_build_by: kkarlberg
+Implementation-Title: Skeleton
+Implementation-Version: 1.0.0
+VCS_branch: Skeleton_stailor_branch
+TAG: Skeleton_1_0_0_1
+CvsWebPath: Skeleton
+kkarlberg-build: 1
+TargetJDK: 1.6
+Build: 1
+Build-date: Wed Jun 15 09:19:48 CEST 2011
+Project-status: Release
+
