@@ -1,28 +1,29 @@
-apply plugin: 'drwp-application'
-apply plugin: 'drwp-common'
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'eclipse'
 
 mainClassName = "FIXME"
 	
+tasks.eclipse.dependsOn cleanEclipse
 repositories {
-    maven {
-    	url artifactory_url+"/all-libs"
-    }
+    mavenCentral()
 }
 
-drwpApp {
-  useDb=false
+sourceSets {
+	main {
+		resources {
+			srcDirs 'src/main/config'
+		}
+	}
 }
-
 dependencies {
 	compile(group: 'commons-lang', name: 'commons-lang', version: '2.6')
 	compile (group:'commons-io', name: 'commons-io', version: '2.4')
 	
-	compile (group: 'drwp.commons', name: 'NetgiroTrueUtils', version: "${ngCommonsVersion}")
-	compile (group: 'drwp', name: 'ConfigClient', version: '1.8.0.35')
-	
 	compile(group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jVersion}")
 	compile (group: 'org.slf4j', name: 'slf4j-log4j12', version: "${slf4jVersion}" )
 	compile (group: 'org.slf4j', name: 'jul-to-slf4j', version: "${slf4jVersion}" )
+	compile (group: 'commons-configuration', name: 'commons-configuration', version: "1.9" )
         
         compile( group: 'org.apache.cxf', name: 'cxf-api', version: "${cxfRtVer}") { exclude module: 'cxf-rt-ws-policy' }
         compile( group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxrs', version: "${cxfRtVer}") { exclude module: 'cxf-rt-ws-policy' }
@@ -35,8 +36,4 @@ dependencies {
         compile('javax.mail:mail:1.4')
         
 	testCompile( group: 'junit', name: 'junit', version: "${junitVersion}")
-}
-
-task wrapper(type: Wrapper) {
-        distributionUrl="${artifactory_url}/third-party-apps/bin/gradle/${wrapperVersion}/gradle-${wrapperVersion}.zip"
 }
