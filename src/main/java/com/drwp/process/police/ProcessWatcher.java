@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -72,8 +74,9 @@ public class ProcessWatcher implements Runnable {
 	}
 
 	private void handlePidStatus(ProcessStatus status, Object[] pn) {
-		String appVersion = getAppVersion((String) pn[1],iDeployDirs);
-		AppRunningStatus stat = new AppRunningStatus((String)pn[1],appVersion,(Integer)pn[0]);
+		String appVersion = getRunningVersion((String) pn[1], (File)pn[2]);
+		String linkVersion = getLinkedVersion((String) pn[1]);
+		AppRunningStatus stat = new AppRunningStatus((String)pn[1],appVersion,linkVersion, (Integer)pn[0]);
 		switch (status) {
 		case DEAD:
 			stat.setStatus(ProcessStatus.DEAD.name());
@@ -88,23 +91,79 @@ public class ProcessWatcher implements Runnable {
 			stat.setStatus(ProcessStatus.UNKNOWN.name());
 			break;
 		}
-		iConan.reportRunningStatus(stat);
+		iConan.reportRunStatus(stat);
 	}
 
-	private static String getAppVersion(String appName, List<String> deployDirs) {
-
+	String getRunningVersion(String appName, File pidFile) {
 		try {
-			String deployDir = findDeployDir(appName,deployDirs);
-			Path link = FileSystems.getDefault().getPath(deployDir, appName);
-			Path target = Files.readSymbolicLink(link);
-			String fName = target.toFile().getName();
-			int index = StringUtils.lastIndexOf(fName, "-");
-			if ( index != -1 )
-				return fName.substring(index+1);
+			Path link = getDeployLink(appName, iDeployDirs);
+			String ver = getVerFromLink(link);
+			if (isLinkYoungerThanPid(link,pidFile)) {
+				cLogger.warn("Ouch, link is younger than pid. Guessing which app is currently running...");
+				return getNewestDeployOlderThanPid(appName,iDeployDirs,pidFile.lastModified());
+			}
+			return ver;
 		} catch (IOException e) {
 			cLogger.warn("Problems determining app version for app "+appName+" maybe it is not linked properly",e);
 		}
 		return "UNKNOWN";
+	}
+
+	String getLinkedVersion(String appName) {
+		try {
+			Path link = getDeployLink(appName, iDeployDirs);
+			return getVerFromLink(link);
+		} catch (IOException e) {
+			cLogger.warn("Problems determining app version for app "+appName+" maybe it is not linked properly",e);
+		}
+		return "UNKNOWN";
+	}
+
+	private static String getNewestDeployOlderThanPid(final String appName,
+			List<String> depDirs, long lastModified) throws IOException {
+		String dd = findDeployDir(appName, depDirs);
+		File depDir = new File(dd );
+		if (!( depDir.exists() && depDir.isDirectory() ))
+			throw new IOException("Very strange, deploy dir "+dd+" does not exist or is not a directory. Fix the config");
+		File[] possible = depDir.listFiles(new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				Path p  = FileSystems.getDefault().getPath(dir.getAbsolutePath(), name);
+				if ( Files.isSymbolicLink(p) )
+					return false;
+				return name.contains(appName);
+			}
+		});
+		File newest = null;
+		for (File f : possible) {
+			if ( f.lastModified() < lastModified && (newest == null || newest.lastModified() < f.lastModified() ) )
+				newest = f;
+		}
+		if ( newest == null )
+			return "UNKNOWN";
+		return getVerFromName(newest.getName());
+	}
+	private static Path getDeployLink(String appName, List<String> depDirs) throws IOException {
+		String deployDir = findDeployDir(appName,depDirs);
+		return FileSystems.getDefault().getPath(deployDir, appName);
+	}
+
+	private static String getVerFromLink(Path link) throws IOException {
+		Path target = Files.readSymbolicLink(link);
+		String name = target.toFile().getName();
+		return getVerFromName(name);
+	}
+	private static String getVerFromName(String name) {
+		int index = StringUtils.lastIndexOf(name, "-");
+		if ( index != -1 ) {
+			return name.substring(index+1);
+		}
+		return "UNKNOWN";
+	}
+
+	//link younger than pid == deployed and linked but not started
+	private boolean isLinkYoungerThanPid(Path link, File pidFile) throws IOException {
+		FileTime fTime = (FileTime) Files.readAttributes(link, "creationTime", LinkOption.NOFOLLOW_LINKS).get("creationTime");
+		return fTime.toMillis() > pidFile.lastModified();
 	}
 
 	private static String findDeployDir(String appName, List<String> deployDirs) throws IOException {
@@ -234,9 +293,10 @@ public class ProcessWatcher implements Runnable {
 		for (File file : pidFiles) {
 			try {
 				int pid = getPidFromFile(file);
-				Object[] o = new Object[2];
+				Object[] o = new Object[3];
 				o[0] = pid;
 				o[1] = getAppName(file);
+				o[2] = file;
 				cLogger.debug("found pid '{}' for app '{}'",pid,o[1] );
 				res.add(o);
 			} catch (Exception e) {

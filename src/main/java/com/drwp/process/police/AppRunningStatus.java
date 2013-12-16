@@ -8,12 +8,26 @@ public class AppRunningStatus {
 	private String appName;
 	private String version;
 	private int pid;
+	private String linkVersion;
 
 	public AppRunningStatus() {} //for cxf
-	public AppRunningStatus(String name, String ver, int aPid) {
+	public AppRunningStatus(String name, String ver, String lVer, int aPid) {
 		appName = name;
 		version = ver;
+		linkVersion = lVer;
 		pid = aPid;
+	}
+	public int getPid() {
+		return pid;
+	}
+	public void setPid(int pid) {
+		this.pid = pid;
+	}
+	public String getLinkVersion() {
+		return linkVersion;
+	}
+	public void setLinkVersion(String linkVersion) {
+		this.linkVersion = linkVersion;
 	}
 	public String getStatus() {
 		return status;
